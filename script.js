@@ -1,3 +1,9 @@
+// проверка Email на валидность
+function isValidEmailAddress(emailAddress) {
+    var pattern = new RegExp(/^(("[\w-\s]+")|([\w-]+(?:\.[\w-]+)*)|("[\w-\s]+")([\w-]+(?:\.[\w-]+)*))(@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$)|(@\[?((25[0-5]\.|2[0-4][0-9]\.|1[0-9]{2}\.|[0-9]{1,2}\.))((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){2}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\]?$)/i);
+    return pattern.test(emailAddress);
+}
+
 function optionsSvgSlider() {
     var wW = $(window).width(),
         wH = $(window).height(),
@@ -883,6 +889,19 @@ $(document).ready(function () {
             var house = $(this).attr('data-house'),
                 stage = $(this).attr('data-stage'),
                 flat = $(this).attr('data-flat');
+            var share_url = $("#yshare_btn").attr('data-addr') + '#apartment&' + flat + '&' + stage + '&' + house;
+            var share_services = $("#yshare_btn").attr('data-services');
+            var share_lang = $("#yshare_btn").attr('data-lang');
+            window.share = Ya.share2('yshare_btn', {
+                content: {
+                    url: share_url              
+                },
+                theme: {
+                    services: share_services,
+                    lang: share_lang,
+                    limit: 0
+                }
+            });
             $('.floor-fancy-block .fancybox-close').trigger('click');
             $('a.fancy.single-flat').attr('data-house', house).attr('data-stage', stage).attr('data-flat', flat);
             $('a.fancy.single-flat').trigger('click');
@@ -968,7 +987,8 @@ $(document).ready(function () {
         }, 400);
     });
 
-    $('.team-item .show-more').on('click', function () {
+    $('.team-item .show-more').on('click', function (e) {
+        e.preventDefault();
         $(this).closest('.team-text').find('p').css({
             "height": "auto",
             "opacity": "1",
@@ -1046,6 +1066,49 @@ $(document).ready(function () {
             }
         }
     });
+
+$(document).on("submit", "form.submitter", function(e) {
+    e.preventDefault();
+    var a = $(this);
+    var error = '';
+    var info = $(this).find('.form_info');
+    $(".error-text").html('');
+    a.find(".req").each(function(){
+        if ($(this).val() == '') {
+            $(this).addClass("required");
+            error = 'Заповніть поля правильно';
+            $(this).next(".error-text").html(error);
+        }
+    })
+    if (error == '') {
+        var data2 = $(this).serialize();
+        info.html('');
+        $.ajax({
+            url: "ajax.php",                                   
+            data: data2,
+            type: "POST",   
+            beforeSend:function(){
+            },                   
+            success: function(msg){
+                ok = msg.split("|");
+                if (ok[0] == 'ok') {
+                    $(".eform input[type='text'], .eform input[type='tel'], .eform textarea").val('');
+                    info.html(ok[1]);
+                } else {
+                    alert(ok[1]);
+                }
+            }
+        })
+    }
+})
+
+    $(".eform input, .eform textarea").on("keyup change", function(e){
+        if ($(this).hasClass("required")) {
+            $(this).removeClass("required");
+            $(this).next(".error-text").html('');
+        }
+    });
+
 
 })
 ;
